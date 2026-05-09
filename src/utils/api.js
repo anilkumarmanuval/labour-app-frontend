@@ -1,4 +1,5 @@
-const BASE_URL = "http://localhost:5000";
+const BASE_URL =
+"https://labour-app-backend-gphd.onrender.com";
 
 // 🔥 MAIN API FUNCTION
 const API = async (url, options = {}) => {
