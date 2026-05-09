@@ -1,0 +1,10 @@
+@import "tailwindcss";
+.nav-link {
+  padding: 10px;
+  border-radius: 8px;
+  transition: 0.3s;
+}
+
+.nav-link:hover {
+  background: #1e293b;
+}

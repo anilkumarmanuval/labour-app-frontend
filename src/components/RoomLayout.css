@@ -1,0 +1,55 @@
+/* Layout Container */
+.layout-container {
+  padding: 20px;
+}
+
+/* Grid */
+.room-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* Room Card */
+.room-card {
+  border-radius: 16px;
+  padding: 15px;
+  background: white;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+  transition: 0.3s;
+}
+
+.room-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Room Title */
+.room-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Bed */
+.bed {
+  padding: 8px;
+  margin: 6px 0;
+  border-radius: 6px;
+  color: white;
+  text-align: center;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.bed:hover {
+  opacity: 0.9;
+}
+
+/* Colors */
+.bed.empty {
+  background: #22c55e;
+}
+
+.bed.occupied {
+  background: #ef4444;
+}
