@@ -1,47 +1,142 @@
 import { useState } from "react";
-import { POST } from "../utils/api"; // ✅ use API
+import { POST } from "../utils/api";
+import "./WorkerForm.css";
 import {
   TextField,
   Button,
-  Paper,
   Typography,
-  MenuItem
+  Checkbox,
+  FormControlLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton
 } from "@mui/material";
 
-function WorkerForm({ campId }) {
-  const [form, setForm] = useState({
-  name: "",
-  company: "",
-  worker_id: "",
-  join_date: "",
-  end_date: "",
-  mess: ""
-});
+import AddIcon from "@mui/icons-material/Add";
 
-  const [showSub, setShowSub] = useState(false);
+import logo from "../assets/logo.png";
+
+import "./WorkerForm.css";
+
+function WorkerForm({ campId }) {
+
+  const DEFAULT_COMPANY = "EOG Resources";
+
+  const [form, setForm] = useState({
+    name: "",
+    company: DEFAULT_COMPANY,
+    worker_id: "",
+    mobile: "",
+    join_date: "",
+    end_date: "",
+    mess: "No",
+    employee_type: "staff",
+    device_user_id: "",
+  });
+
+  // COMPANY MODAL
+
+  const [openSubModal, setOpenSubModal] = useState(false);
 
   const [subForm, setSubForm] = useState({
-    company_id: "",
     company_name: "",
     address: "",
-    category: "",
-    sub_name: ""
+    trn: ""
   });
 
   const [loading, setLoading] = useState(false);
 
+  // =========================
+  // HANDLE FORM
+  // =========================
+
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
+
   };
+
+  // =========================
+  // HANDLE COMPANY FORM
+  // =========================
 
   const handleSubChange = (e) => {
-    setSubForm({ ...subForm, [e.target.name]: e.target.value });
+
+    setSubForm({
+      ...subForm,
+      [e.target.name]: e.target.value
+    });
+
   };
 
   // =========================
-  // 🟩 ADD WORKER
+  // EMPLOYEE TYPE
   // =========================
+
+  const handleTypeChange = (type) => {
+
+    if (type === "staff") {
+
+      setForm({
+        ...form,
+        employee_type: "staff",
+        company: DEFAULT_COMPANY
+      });
+
+    }
+
+    else if (type === "visitor") {
+
+      setForm({
+        ...form,
+        employee_type: "visitor",
+        company: ""
+      });
+
+    }
+
+    else {
+
+      setForm({
+        ...form,
+        employee_type: "third_party",
+        company: ""
+      });
+
+    }
+  };
+
+  // =========================
+  // RESET FORM
+  // =========================
+
+  const resetForm = () => {
+
+    setForm({
+      name: "",
+      company: DEFAULT_COMPANY,
+      worker_id: "",
+      mobile: "",
+      join_date: "",
+      end_date: "",
+      mess: "No",
+      employee_type: "staff",
+      device_user_id: "",
+    });
+
+  };
+
+  // =========================
+  // SAVE EMPLOYEE
+  // =========================
+
   const handleSubmit = async (e) => {
+
     e.preventDefault();
 
     if (loading) return;
@@ -52,144 +147,413 @@ function WorkerForm({ campId }) {
     }
 
     if (!form.name || !form.worker_id) {
-      alert("Name and Worker ID required");
+      alert("Name and Employee ID required");
+      return;
+    }
+
+    // MOBILE VALIDATION
+
+    if (form.mobile && form.mobile.length < 10) {
+      alert("Mobile number must be 10 digits");
+      return;
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+
+    // JOIN DATE VALIDATION
+
+    if (form.join_date && form.join_date > today) {
+      alert("Join date cannot be future date");
+      return;
+    }
+
+    // END DATE VALIDATION
+
+    if (form.end_date && form.end_date <= today) {
+      alert("End date must be future date");
       return;
     }
 
     setLoading(true);
 
     try {
+
       await POST("/workers", {
         ...form,
         camp_id: campId
       });
 
-      alert("Worker added!");
+      alert("Employee added successfully!");
 
-      setForm({
-  name: "",
-  company: "",
-  worker_id: "",
-  join_date: "",
-  end_date: "",
-  mess: ""
-});
+      resetForm();
 
     } catch (err) {
+
       alert(err.message);
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
   // =========================
-  // 🏢 ADD SUB CONTRACTOR
+  // SAVE COMPANY
   // =========================
+
   const handleSubSubmit = async (e) => {
+
     e.preventDefault();
 
     try {
+
       await POST("/subcontractors", subForm);
 
-      alert("Sub Contractor added!");
-      setShowSub(false);
+      alert("Company added!");
+
+      // AUTO FILL COMPANY
+
+      setForm((prev) => ({
+        ...prev,
+        company: subForm.company_name
+      }));
+
+      setOpenSubModal(false);
 
       setSubForm({
-        company_id: "",
         company_name: "",
         address: "",
-        category: "",
-        sub_name: ""
+        trn: ""
       });
 
     } catch (err) {
+
       alert(err.message);
+
     }
   };
 
   return (
-    <Paper elevation={3} style={{ maxWidth: "700px", margin: "auto", padding: "30px" }}>
 
-      <Typography variant="h5" fontWeight="bold" gutterBottom>
-        Add Worker
-      </Typography>
+    <div className="employee-page">
 
-      {/* 🔵 WORKER FORM */}
-      <form onSubmit={handleSubmit}>
-        <TextField label="Full Name" name="name" fullWidth margin="normal" value={form.name} onChange={handleChange} />
-        <TextField label="Company" name="company" fullWidth margin="normal" value={form.company} onChange={handleChange} />
-        <TextField label="Worker ID" name="worker_id" fullWidth margin="normal" value={form.worker_id} onChange={handleChange} />
-<TextField
-  label="Join Date"
-  type="date"
-  name="join_date"
+      {/* MAIN CARD */}
+
+      <div className="employee-card">
+
+        {/* LEFT PANEL */}
+
+        <div className="left-panel">
+
+          <img
+            src={logo}
+            alt="logo"
+            className="company-logo"
+          />
+
+          <Typography
+            variant="h3"
+            className="left-title"
+          >
+            EOG
+          </Typography>
+
+          <Typography
+            variant="h4"
+            className="left-subtitle"
+          >
+            Camp Management
+          </Typography>
+
+          <p className="left-description">
+            Employee registration and workforce
+            management portal for camp administration.
+          </p>
+
+        </div>
+
+        {/* RIGHT PANEL */}
+
+        <div className="right-panel">
+
+          <Typography
+            variant="h4"
+            className="form-title"
+          >
+            Add Employee
+          </Typography>
+
+          {/* EMPLOYEE TYPE */}
+
+          <div className="employee-type-box">
+
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={form.employee_type === "staff"}
+                  onChange={() => handleTypeChange("staff")}
+                />
+              }
+              label="Staff"
+            />
+
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={form.employee_type === "visitor"}
+                  onChange={() => handleTypeChange("visitor")}
+                />
+              }
+              label="Visitor"
+            />
+
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={form.employee_type === "third_party"}
+                  onChange={() => handleTypeChange("third_party")}
+                />
+              }
+              label="Third Party"
+            />
+
+          </div>
+
+          {/* FORM */}
+
+          <form
+            onSubmit={handleSubmit}
+            className="employee-form"
+          >
+
+            {/* FULL NAME */}
+
+            <TextField
+              label="Full Name"
+              name="name"
+              fullWidth
+              value={form.name}
+              onChange={handleChange}
+            />
+
+            {/* COMPANY */}
+
+            <div className="company-row">
+
+              <TextField
+                label="Company"
+                name="company"
+                fullWidth
+                value={form.company}
+                onChange={handleChange}
+                disabled={form.employee_type === "staff"}
+              />
+
+              {(form.employee_type === "visitor" ||
+                form.employee_type === "third_party") && (
+
+                <IconButton
+                  color="primary"
+                  onClick={() => setOpenSubModal(true)}
+                >
+                  <AddIcon />
+                </IconButton>
+
+              )}
+
+            </div>
+
+            {/* EMPLOYEE ID */}
+
+            <TextField
+              label="Employee ID"
+              name="worker_id"
+              fullWidth
+              value={form.worker_id}
+              onChange={handleChange}
+            />
+
+            {/* MOBILE */}
+
+            <TextField
+              label="Mobile Number"
+              name="mobile"
+              fullWidth
+              value={form.mobile}
+              onChange={(e) => {
+
+                const value = e.target.value.replace(/\D/g, "");
+
+                setForm({
+                  ...form,
+                  mobile: value
+                });
+
+              }}
+              inputprops={{
+                maxLength: 10
+              }}
+            />
+
+              <TextField
+  label="Biometric User ID"
+  name="device_user_id"
   fullWidth
-  margin="normal"
-  value={form.join_date}
+  value={form.device_user_id}
   onChange={handleChange}
-  InputLabelProps={{
-    shrink: true
-  }}
 />
 
-<TextField
-  label="End Date"
-  type="date"
-  name="end_date"
-  fullWidth
-  margin="normal"
-  value={form.end_date}
-  onChange={handleChange}
-  InputLabelProps={{
-    shrink: true
+            {/* JOIN DATE */}
+
+            <TextField
+              label="Join Date"
+              type="date"
+              name="join_date"
+              fullWidth
+              value={form.join_date}
+              onChange={handleChange}
+             slotProps={{
+    inputLabel: {
+      shrink: true
+    }
   }}
-/>
-        <TextField select label="Mess Option" name="mess" fullWidth margin="normal" value={form.mess} onChange={handleChange}>
-          <MenuItem value="Yes">Yes</MenuItem>
-          <MenuItem value="No">No</MenuItem>
-        </TextField>
+              inputprops={{
+                max: new Date().toISOString().split("T")[0]
+              }}
+            />
 
-        <Button
-          type="submit"
-          variant="contained"
-          fullWidth
-          disabled={loading}
-          style={{ marginTop: "20px" }}
-        >
-          {loading ? "Saving..." : "Save Worker"}
-        </Button>
-      </form>
+            {/* END DATE */}
 
-      {/* 🔥 TOGGLE */}
-      <Button
-        variant="outlined"
+            <TextField
+              label="End Date"
+              type="date"
+              name="end_date"
+              fullWidth
+              value={form.end_date}
+              onChange={handleChange}
+              slotProps={{
+    inputLabel: {
+      shrink: true
+    }
+  }}
+              inputprops={{
+                min: new Date().toISOString().split("T")[0]
+              }}
+            />
+
+            {/* MESS */}
+
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={form.mess === "Yes"}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      mess: e.target.checked ? "Yes" : "No"
+                    })
+                  }
+                />
+              }
+              label="Mess Required"
+            />
+
+            {/* BUTTONS */}
+
+            <div className="button-group">
+
+              <Button
+                type="button"
+                variant="outlined"
+                onClick={resetForm}
+              >
+                Cancel
+              </Button>
+
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={loading}
+              >
+                {loading ? "Saving..." : "Save Employee"}
+              </Button>
+
+            </div>
+
+          </form>
+
+        </div>
+
+      </div>
+
+      {/* ========================= */}
+      {/* COMPANY MODAL */}
+      {/* ========================= */}
+
+      <Dialog
+        open={openSubModal}
+        onClose={() => setOpenSubModal(false)}
+        maxWidth="md"
         fullWidth
-        style={{ marginTop: "20px" }}
-        onClick={() => setShowSub(!showSub)}
       >
-        {showSub ? "Close Sub Contractor" : "Add Sub Contractor"}
-      </Button>
 
-      {/* 🏢 SUB CONTRACTOR */}
-      {showSub && (
-        <form onSubmit={handleSubSubmit} style={{ marginTop: "20px" }}>
+        <DialogTitle>
+          Add Company
+        </DialogTitle>
 
-          <Typography variant="h6">Sub Contractor Details</Typography>
+        <form onSubmit={handleSubSubmit}>
 
-          <TextField label="Company ID" name="company_id" fullWidth margin="normal" value={subForm.company_id} onChange={handleSubChange} />
-          <TextField label="Company Name" name="company_name" fullWidth margin="normal" value={subForm.company_name} onChange={handleSubChange} />
-          <TextField label="Address" name="address" fullWidth margin="normal" value={subForm.address} onChange={handleSubChange} />
-          <TextField label="Category" name="category" fullWidth margin="normal" value={subForm.category} onChange={handleSubChange} />
-          <TextField label="Sub Contractor Name" name="sub_name" fullWidth margin="normal" value={subForm.sub_name} onChange={handleSubChange} />
+          <DialogContent className="modal-form">
 
-          <Button type="submit" variant="contained" color="secondary" fullWidth style={{ marginTop: "15px" }}>
-            Save Sub Contractor
-          </Button>
+            <TextField
+              label="Company Name"
+              name="company_name"
+              fullWidth
+              value={subForm.company_name}
+              onChange={handleSubChange}
+            />
+
+            <TextField
+              label="Address"
+              name="address"
+              fullWidth
+              value={subForm.address}
+              onChange={handleSubChange}
+            />
+
+            <TextField
+              label="Tax Registration Number (TRN)"
+              name="trn"
+              fullWidth
+              value={subForm.trn}
+              onChange={handleSubChange}
+            />
+
+          </DialogContent>
+
+          <DialogActions>
+
+            <Button
+              onClick={() => setOpenSubModal(false)}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              type="submit"
+              variant="contained"
+            >
+              Save Company
+            </Button>
+
+          </DialogActions>
 
         </form>
-      )}
 
-    </Paper>
+      </Dialog>
+
+    </div>
   );
 }
 

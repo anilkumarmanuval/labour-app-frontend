@@ -3,18 +3,18 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import WorkerForm from "./components/WorkerForm";
 import RoomForm from "./components/RoomForm";
-import RoomLayout from "./components/RoomLayout";
 import CampForm from "./components/CampForm";
 import Login from "./components/Login";
 import Attendance from "./components/Attendance";
-
 import Topbar from "./components/superadmin/Topbar";
 import Sidebar from "./components/superadmin/Sidebar";
 import AllWorkers from "./components/superadmin/AllWorkers";
 import AllRooms from "./components/superadmin/AllRooms";
 import CampList from "./components/superadmin/CampList";
-
+import RoomManagement from "./components/superadmin/RoomManagement";
 import ProtectedRoute from "./components/ProtectedRoute";
+import DeviceManagement from "./components/superadmin/DeviceManagement";
+import Reports from "./components/superadmin/Reports";
 
 // ✅ AUTH CONTEXT
 import { useAuth } from "./context/AuthContext";
@@ -54,6 +54,8 @@ function App() {
       </Routes>
     );
   }
+
+
 
   // =========================
   // 👤 USER DATA
@@ -117,7 +119,7 @@ function App() {
             />
 
             <Route
-              path="/rooms"
+  path="/room-allocation"
               element={
                 <ProtectedRoute roles={["campadmin"]}>
                   <RoomForm campId={campId} />
@@ -125,14 +127,6 @@ function App() {
               }
             />
 
-            <Route
-              path="/layout"
-              element={
-                <ProtectedRoute roles={["campadmin"]}>
-                  <RoomLayout campId={campId} />
-                </ProtectedRoute>
-              }
-            />
 
             {/* ========================= */}
             {/* 🔴 SUPERADMIN */}
@@ -173,6 +167,17 @@ function App() {
                 </ProtectedRoute>
               }
             />
+                <Route
+  path="/room-management"
+  element={
+    <ProtectedRoute roles={["superadmin"]}>
+      <RoomManagement />
+    </ProtectedRoute>
+  }
+/>
+
+<Route  path="/devices"  element={<DeviceManagement />} />
+<Route path="/reports" element={ <ProtectedRoute roles={["superadmin"]} > <Reports /> </ProtectedRoute> }/>
 
             {/* ========================= */}
             {/* 🕒 ATTENDANCE */}

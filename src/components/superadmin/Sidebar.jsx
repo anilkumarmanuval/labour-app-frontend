@@ -1,14 +1,15 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import logo from "../../assets/logo.png";
 
 import {
   LayoutDashboard,
   Users,
   Bed,
   Layers,
-  PlusCircle,
-  Building2,
-  LogOut
+  LogOut,
+  Cpu,
+  FileSpreadsheet
 } from "lucide-react";
 
 // 🔥 ROLE CONSTANTS
@@ -27,50 +28,54 @@ const MENU = {
     }
   ],
 
+  // 🔴 SUPER ADMIN
   superadmin: [
-    {
-      path: "/camp",
-      label: "Create Camp",
-      icon: PlusCircle
-    },
-    {
-      path: "/camp-list",
-      label: "Camps",
-      icon: Building2
-    },
+
     {
       path: "/all-workers",
-      label: "All Workers",
+      label: "Employee Management",
       icon: Users
     },
+
     {
-      path: "/all-rooms",
-      label: "All Rooms",
-      icon: Bed
-    }
+  path: "/room-management",
+  label: "Room Management",
+  icon: Bed
+},
+
+{
+  path: "/devices",
+  label: "Devices",
+  icon: Cpu
+},
+{
+  path: "/reports",
+  label: "Reports",
+  icon: FileSpreadsheet
+}
   ],
 
+  // 🟡 CAMP ADMIN
   campadmin: [
+
     {
       path: "/workers",
       label: "Workers",
       icon: Users
     },
+
     {
-      path: "/rooms",
-      label: "Rooms",
+      path: "/room-allocation",
+      label: "Room Allocation",
       icon: Bed
     },
-    {
-      path: "/layout",
-      label: "Layout",
-      icon: Layers
-    },
+
     {
       path: "/attendance",
       label: "Attendance",
       icon: Layers
     }
+
   ]
 };
 
@@ -110,20 +115,29 @@ function Sidebar({ role }) {
       {/* 🔷 TOP */}
       <div>
 
-        {/* LOGO */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-blue-600">
-            Camp System
-          </h2>
+{/* LOGO */}
+<div className="mb-2 flex flex-col items-center text-center -mt-4">
+    <img
+    src={logo}
+    alt="Company Logo"
+    className="w-50 h-40 object-contain mb-1"
+  />
 
-          <p className="text-xs text-gray-400 uppercase tracking-wide mt-2">
-            {role === ROLES.SUPERADMIN
-              ? "Super Admin"
-              : role === ROLES.CAMPADMIN
-              ? "Camp Admin"
-              : "User"}
-          </p>
-        </div>
+  <h2 className="text-xl font-bold text-blue-600 leading-tight">
+    EOG Camp
+    <br />
+    Management System
+  </h2>
+
+  <p className="text-xs text-gray-400 uppercase tracking-wide mt-3">
+    {role === ROLES.SUPERADMIN
+      ? "Super Admin"
+      : role === ROLES.CAMPADMIN
+      ? "Camp Admin"
+      : "User"}
+  </p>
+
+</div>
 
         {/* NAVIGATION */}
         <nav className="flex flex-col gap-2">

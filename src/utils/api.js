@@ -1,5 +1,5 @@
 const BASE_URL =
-"https://labour-app-backend-gphd.onrender.com";
+"http://localhost:5000";
 
 // 🔥 MAIN API FUNCTION
 const API = async (url, options = {}) => {
@@ -35,13 +35,16 @@ const API = async (url, options = {}) => {
     }
 
     if (!res.ok) {
-      throw new Error(data?.error || data || "Request failed");
-    }
+throw new Error(
+  typeof data === "object"
+    ? JSON.stringify(data)
+    : data?.error || data || "Request failed"
+);    }
 
     return data;
 
   } catch (err) {
-    console.error("API ERROR:", err.message);
+    console.error("API ERROR:", err );
     throw err;
   }
 };

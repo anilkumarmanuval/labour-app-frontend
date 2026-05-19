@@ -1,256 +1,558 @@
 import { useEffect, useState } from "react";
-import { GET, POST, PUT } from "../utils/api"; // ✅ API
+
+import {
+  GET,
+  PUT
+} from "../utils/api";
 
 function RoomForm({ campId }) {
-  const [rooms, setRooms] = useState([]);
-  const [workers, setWorkers] = useState([]);
-  const [beds, setBeds] = useState([]);
 
-  const [roomNumber, setRoomNumber] = useState("");
-  const [selectedRoom, setSelectedRoom] = useState("");
-  const [bedNumber, setBedNumber] = useState("");
-  const [selectedWorker, setSelectedWorker] = useState("");
+  const [rooms, setRooms] =
+    useState([]);
 
-  const [error, setError] = useState(null);
+  const [workers, setWorkers] =
+    useState([]);
+
+  const [beds, setBeds] =
+    useState([]);
+
+  const [selectedRoom, setSelectedRoom] =
+    useState("");
+
+  const [selectedWorker, setSelectedWorker] =
+    useState("");
+
+  const [error, setError] =
+    useState(null);
 
   // =========================
-  // 🔄 FETCH DATA
+  // FETCH DATA
   // =========================
+
   useEffect(() => {
-    if (!campId) return;
 
     fetchRooms();
     fetchWorkers();
-  }, [campId]);
 
-  const fetchRooms = async () => {
+  }, []);
+
+  // =========================
+  // FETCH ROOMS
+  // =========================
+
+  const fetchRooms =
+    async () => {
+
     try {
-      const data = await GET(`/rooms?camp_id=${campId}`);
+
+      const data =
+        await GET("/rooms");
+
       setRooms(data);
+
     } catch (err) {
+
       setError(err.message);
+
     }
+
   };
 
-  const fetchWorkers = async () => {
+  // =========================
+  // FETCH WORKERS
+  // =========================
+
+  const fetchWorkers =
+    async () => {
+
     try {
-      const data = await GET("/workers");
-      setWorkers(data.filter(w => w.camp_id === campId));
+
+      const data =
+        await GET("/available-workers");
+
+      setWorkers(data);
+
     } catch (err) {
+
       setError(err.message);
+
     }
+
   };
 
-  const fetchBeds = async (roomId) => {
+  // =========================
+  // FETCH BEDS
+  // =========================
+
+  const fetchBeds =
+    async (roomId) => {
+
     try {
-      const data = await GET(`/beds?room_id=${roomId}`);
+
+      const data =
+        await GET(
+          `/beds?room_id=${roomId}`
+        );
+
       setBeds(data);
+
     } catch (err) {
+
       setError(err.message);
+
     }
+
   };
 
   // =========================
-  // 🟦 CREATE ROOM
+  // ASSIGN BED
   // =========================
-  const handleAddRoom = async (e) => {
-    e.preventDefault();
 
-    if (!roomNumber.trim()) {
-      return alert("Room number required");
-    }
+  const handleAssign =
+    async (bedId) => {
 
-    try {
-      await POST("/rooms", {
-        room_number: roomNumber,
-        camp_id: campId
-      });
-
-      setRoomNumber("");
-      fetchRooms();
-
-    } catch (err) {
-      alert(err.message);
-    }
-  };
-
-  // =========================
-  // 🟪 ADD BED
-  // =========================
-  const handleAddBed = async (e) => {
-    e.preventDefault();
-
-    if (!bedNumber.trim()) {
-      return alert("Bed number required");
-    }
-
-    try {
-      await POST("/beds", {
-        bed_number: bedNumber,
-        room_id: selectedRoom
-      });
-
-      setBedNumber("");
-      fetchBeds(selectedRoom);
-
-    } catch (err) {
-      alert(err.message);
-    }
-  };
-
-  // =========================
-  // 🟩 ASSIGN
-  // =========================
-  const handleAssign = async (bedId) => {
     if (!selectedWorker) {
-      return alert("Select worker first");
+
+      return alert(
+        "Select worker first"
+      );
+
     }
 
     try {
-      await PUT("/beds/assign", {
-        bed_id: bedId,
-        worker_id: selectedWorker
-      });
 
-      fetchBeds(selectedRoom);
+      await PUT(
+        "/beds/assign",
+        {
+          bed_id: bedId,
+          worker_id:
+            selectedWorker
+        }
+      );
 
+      fetchBeds(
+        selectedRoom
+      );
+await fetchWorkers();
+setSelectedWorker("");
     } catch (err) {
+
       alert(err.message);
+
     }
+
   };
 
   // =========================
-  // ❌ UNASSIGN
+  // UNASSIGN BED
   // =========================
-  const handleUnassign = async (bedId) => {
+
+  const handleUnassign =
+    async (bedId) => {
+
     try {
-      await PUT("/beds/unassign", { bed_id: bedId });
-      fetchBeds(selectedRoom);
+
+      await PUT(
+        "/beds/unassign",
+        {
+          bed_id: bedId
+        }
+      );
+
+      fetchBeds(
+        selectedRoom
+      );
+
     } catch (err) {
+
       alert(err.message);
+
     }
+
   };
 
   // =========================
-  // ❌ ERROR UI
+  // ERROR UI
   // =========================
+
   if (error) {
-    return <div className="p-8 text-red-500">{error}</div>;
+
+    return (
+      <div className="
+        p-8
+        text-red-500
+      ">
+        {error}
+      </div>
+    );
+
   }
 
   return (
-    <div className="space-y-6">
 
-      {/* CREATE ROOM */}
-      <div className="bg-white p-6 rounded-xl shadow">
-        <h2>Create Room</h2>
+    <div className="
+      p-6
+      space-y-6
+    ">
 
-        <form onSubmit={handleAddRoom} className="flex gap-4">
-          <input
-            value={roomNumber}
-            onChange={(e) => setRoomNumber(e.target.value)}
-            placeholder="Room Number"
-            className="border p-2 rounded w-full"
-          />
-          <button className="bg-blue-500 text-white px-4 rounded">
-            Add
-          </button>
-        </form>
+      {/* HEADER */}
+
+      <div>
+
+        <h1 className="
+          text-3xl
+          font-bold
+        ">
+          Room Allocation
+        </h1>
+
+        <p className="
+          text-gray-500
+          mt-1
+        ">
+          Assign employees to beds
+        </p>
+
       </div>
 
-      {/* SELECT ROOM */}
-      <div className="bg-white p-6 rounded-xl shadow">
-        <h2>Select Room</h2>
+      {/* TOP SECTION */}
 
-        <select
-          onChange={(e) => {
-            setSelectedRoom(e.target.value);
-            fetchBeds(e.target.value);
-          }}
-          className="border p-2 rounded w-full"
-        >
-          <option value="">Select Room</option>
-          {rooms.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.room_number}
-            </option>
-          ))}
-        </select>
-      </div>
+      <div className="
+        grid
+        grid-cols-1
+        md:grid-cols-2
+        gap-6
+      ">
 
-      {/* ADD BED */}
-      {selectedRoom && (
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2>Add Bed</h2>
+        {/* SELECT ROOM */}
 
-          <form onSubmit={handleAddBed} className="flex gap-4">
-            <input
-              value={bedNumber}
-              onChange={(e) => setBedNumber(e.target.value)}
-              placeholder="Bed Number"
-              className="border p-2 rounded w-full"
-            />
-            <button className="bg-purple-500 text-white px-4 rounded">
-              Add Bed
-            </button>
-          </form>
-        </div>
-      )}
+        <div className="
+          bg-white
+          p-6
+          rounded-2xl
+          shadow-lg
+        ">
 
-      {/* ASSIGN */}
-      {selectedRoom && (
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2>Assign Workers</h2>
+          <h2 className="
+            text-lg
+            font-semibold
+            mb-4
+          ">
+            Select Room
+          </h2>
 
           <select
-            onChange={(e) => setSelectedWorker(e.target.value)}
-            className="border p-2 mb-4 w-full"
+            value={selectedRoom}
+            onChange={(e) => {
+
+              setSelectedRoom(
+                e.target.value
+              );
+
+              fetchBeds(
+                e.target.value
+              );
+
+            }}
+            className="
+              border
+              rounded-xl
+              p-3
+              w-full
+            "
           >
-            <option>Select Worker</option>
-            {workers.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.name}
+
+            <option value="">
+              Choose Room
+            </option>
+
+            {rooms.map((room) => (
+
+              <option
+                key={room.id}
+                value={room.id}
+              >
+                {room.room_number}
               </option>
+
             ))}
+
           </select>
 
-          {beds.map((b) => {
-            const occupied = b.worker_id;
-
-            return (
-              <div
-                key={b.id}
-                className={`flex justify-between p-3 rounded text-white ${
-                  occupied ? "bg-red-500" : "bg-green-500"
-                }`}
-              >
-                <span>
-                  Bed {b.bed_number} — {occupied ? "Occupied" : "Available"}
-                </span>
-
-                {!occupied ? (
-                  <button
-                    onClick={() => handleAssign(b.id)}
-                    className="bg-blue-500 px-3 rounded"
-                  >
-                    Assign
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleUnassign(b.id)}
-                    className="bg-yellow-500 px-3 rounded"
-                  >
-                    Unassign
-                  </button>
-                )}
-              </div>
-            );
-          })}
         </div>
+
+        {/* SELECT WORKER */}
+
+        <div className="
+          bg-white
+          p-6
+          rounded-2xl
+          shadow-lg
+        ">
+
+          <h2 className="
+            text-lg
+            font-semibold
+            mb-4
+          ">
+            Select Employee
+          </h2>
+
+          <select
+            value={selectedWorker}
+            onChange={(e) =>
+              setSelectedWorker(
+                e.target.value
+              )
+            }
+            className="
+              border
+              rounded-xl
+              p-3
+              w-full
+            "
+          >
+
+            <option value="">
+              Choose Employee
+            </option>
+
+            {workers.map((worker) => (
+
+              <option
+                key={worker.id}
+                value={worker.id}
+              >
+                {worker.name}
+                {" — "}
+                {worker.company}
+              </option>
+
+            ))}
+
+          </select>
+
+        </div>
+
+      </div>
+
+      {/* BED GRID */}
+
+      {selectedRoom && (
+
+        <div className="
+          bg-white
+          p-6
+          rounded-2xl
+          shadow-lg
+        ">
+
+          <div className="
+            flex
+            justify-between
+            items-center
+            mb-6
+          ">
+
+            <h2 className="
+              text-xl
+              font-bold
+            ">
+              Bed Allocation
+            </h2>
+
+            <span className="
+              text-sm
+              text-gray-500
+            ">
+              Total Beds:
+              {" "}
+              {beds.length}
+            </span>
+
+          </div>
+
+          <div className="
+            grid
+            grid-cols-1
+            md:grid-cols-2
+            lg:grid-cols-3
+            gap-4
+          ">
+
+            {beds.map((bed) => {
+
+              const occupied =
+                bed.worker_id;
+
+              return (
+
+                <div
+                  key={bed.id}
+                  className={`
+                    rounded-2xl
+                    p-5
+                    text-white
+                    shadow-lg
+                    transition
+
+                    ${
+                      occupied
+
+                      ? "bg-red-500"
+
+                      : "bg-green-500"
+                    }
+                  `}
+                >
+
+                  {/* BED NUMBER */}
+
+                  <div className="
+                    flex
+                    justify-between
+                    items-center
+                    mb-4
+                  ">
+
+                    <h3 className="
+                      text-xl
+                      font-bold
+                    ">
+                      {bed.bed_number}
+                    </h3>
+
+                    <span className="
+                      text-xs
+                      bg-white/20
+                      px-2
+                      py-1
+                      rounded-full
+                    ">
+
+                      {occupied
+                        ? "Occupied"
+                        : "Available"}
+
+                    </span>
+
+                  </div>
+
+                  {/* STATUS */}
+
+                  <div className="
+                    mb-4
+                  ">
+
+                    {occupied ? (
+
+                      <div>
+
+                        <p className="
+                          text-sm
+                          opacity-90
+                        ">
+                          Assigned Worker
+                        </p>
+
+                       <div>
+
+  <p className="
+    text-lg
+    font-semibold
+  ">
+    {bed.worker_name}
+  </p>
+
+  <p className="
+    text-xs
+    opacity-80
+    mt-1
+  ">
+    {bed.employee_type}
+  </p>
+
+</div>
+
+                      </div>
+
+                    ) : (
+
+                      <p className="
+                        text-sm
+                        opacity-90
+                      ">
+                        Ready for allocation
+                      </p>
+
+                    )}
+
+                  </div>
+
+                  {/* BUTTON */}
+
+                  {!occupied ? (
+
+                    <button
+                      onClick={() =>
+                        handleAssign(
+                          bed.id
+                        )
+                      }
+                      className="
+                        bg-white
+                        text-green-600
+                        w-full
+                        py-2
+                        rounded-xl
+                        font-semibold
+                        hover:bg-gray-100
+                        transition
+                      "
+                    >
+                      Assign Bed
+                    </button>
+
+                  ) : (
+
+                    <button
+                      onClick={() =>
+                        handleUnassign(
+                          bed.id
+                        )
+                      }
+                      className="
+                        bg-white
+                        text-red-600
+                        w-full
+                        py-2
+                        rounded-xl
+                        font-semibold
+                        hover:bg-gray-100
+                        transition
+                      "
+                    >
+                      Remove Worker
+                    </button>
+
+                  )}
+
+                </div>
+
+              );
+
+            })}
+
+          </div>
+
+        </div>
+
       )}
 
     </div>
+
   );
+
 }
 
 export default RoomForm;

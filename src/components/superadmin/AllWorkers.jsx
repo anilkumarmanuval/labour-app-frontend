@@ -1,9 +1,28 @@
-import { useEffect, useMemo, useState } from "react";
-import { GET } from "../../utils/api";
+import {
+  useEffect,
+  useMemo,
+  useState
+} from "react";
+
+import {
+  GET,
+  DELETE,
+  PUT
+} from "../../utils/api";
+
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button
+} from "@mui/material";
 
 function AllWorkers() {
 
-  const [workers, setWorkers] = useState([]);
+  const [workers, setWorkers] =
+    useState([]);
 
   const [loading, setLoading] =
     useState(true);
@@ -12,12 +31,22 @@ function AllWorkers() {
     useState("");
 
   // 🔍 SEARCH
+
   const [search, setSearch] =
     useState("");
+
+  // ✏️ EDIT MODAL
+
+  const [openEdit, setOpenEdit] =
+    useState(false);
+
+  const [editWorker, setEditWorker] =
+    useState(null);
 
   // =========================
   // 🔄 FETCH
   // =========================
+
   useEffect(() => {
 
     const fetchWorkers =
@@ -59,8 +88,97 @@ function AllWorkers() {
   }, []);
 
   // =========================
-  // 🔎 FILTERED
+  // ✏️ EDIT
   // =========================
+
+  const handleEdit = (
+    worker
+  ) => {
+
+    setEditWorker(worker);
+
+    setOpenEdit(true);
+
+  };
+
+  // =========================
+  // 💾 UPDATE
+  // =========================
+
+  const handleUpdate =
+    async () => {
+
+    try {
+
+      await PUT(
+        `/workers/${editWorker.id}`,
+        editWorker
+      );
+
+      setWorkers((prev) =>
+        prev.map((worker) =>
+          worker.id ===
+          editWorker.id
+            ? editWorker
+            : worker
+        )
+      );
+
+      setOpenEdit(false);
+
+    } catch (err) {
+
+      alert(
+        err.message ||
+        "Update failed"
+      );
+
+    }
+
+  };
+
+  // =========================
+  // 🗑 DELETE
+  // =========================
+
+  const handleDelete =
+    async (id) => {
+
+    const confirmDelete =
+      window.confirm(
+        "Delete this employee?"
+      );
+
+    if (!confirmDelete) return;
+
+    try {
+
+      await DELETE(
+        `/workers/${id}`
+      );
+
+      setWorkers((prev) =>
+        prev.filter(
+          (worker) =>
+            worker.id !== id
+        )
+      );
+
+    } catch (err) {
+
+      alert(
+        err.message ||
+        "Delete failed"
+      );
+
+    }
+
+  };
+
+  // =========================
+  // 🔎 FILTER
+  // =========================
+
   const filteredWorkers =
     useMemo(() => {
 
@@ -88,6 +206,18 @@ function AllWorkers() {
             ?.toLowerCase()
             .includes(text)
 
+          ||
+
+          worker.employee_type
+            ?.toLowerCase()
+            .includes(text)
+
+          ||
+
+          worker.worker_id
+            ?.toLowerCase()
+            .includes(text)
+
         );
 
       });
@@ -97,6 +227,7 @@ function AllWorkers() {
   // =========================
   // ⏳ LOADING
   // =========================
+
   if (loading) {
 
     return (
@@ -106,8 +237,9 @@ function AllWorkers() {
         items-center
         min-h-[300px]
         text-lg
+        font-medium
       ">
-        Loading workers...
+        Loading employees...
       </div>
     );
 
@@ -116,6 +248,7 @@ function AllWorkers() {
   // =========================
   // ❌ ERROR
   // =========================
+
   if (error) {
 
     return (
@@ -137,8 +270,10 @@ function AllWorkers() {
       bg-white
       dark:bg-gray-900
       p-6
-      rounded-3xl
-      shadow-xl
+      rounded-2xl
+      shadow-lg
+      border
+      border-gray-100
       space-y-6
     ">
 
@@ -155,6 +290,8 @@ function AllWorkers() {
         gap-4
       ">
 
+        {/* LEFT */}
+
         <div>
 
           <h2 className="
@@ -163,7 +300,7 @@ function AllWorkers() {
             text-gray-800
             dark:text-white
           ">
-            All Workers
+            Employee Management
           </h2>
 
           <p className="
@@ -171,35 +308,67 @@ function AllWorkers() {
             text-gray-500
             mt-1
           ">
-            Total Workers:
+            Total Employees:
             {" "}
             {filteredWorkers.length}
           </p>
 
         </div>
 
-        {/* 🔍 SEARCH */}
-        <input
-          type="text"
-          placeholder="Search workers..."
-          value={search}
-          onChange={(e) =>
-            setSearch(e.target.value)
-          }
-          className="
-            border
-            dark:border-gray-700
-            dark:bg-gray-800
-            dark:text-white
-            p-3
-            rounded-2xl
-            w-full
-            md:w-80
-            outline-none
-            focus:ring-2
-            focus:ring-blue-500
-          "
-        />
+        {/* RIGHT */}
+
+        <div className="
+          flex
+          gap-3
+          items-center
+        ">
+
+          {/* SEARCH */}
+
+          <input
+            type="text"
+            placeholder="Search employees..."
+            value={search}
+            onChange={(e) =>
+              setSearch(
+                e.target.value
+              )
+            }
+            className="
+              border
+              border-gray-200
+              dark:border-gray-700
+              dark:bg-gray-800
+              dark:text-white
+              px-4
+              py-3
+              rounded-xl
+              w-full
+              md:w-80
+              outline-none
+              focus:ring-2
+              focus:ring-blue-500
+              bg-gray-50
+            "
+          />
+
+          {/* ADD BUTTON */}
+
+          <button className="
+            bg-blue-600
+            hover:bg-blue-700
+            text-white
+            px-5
+            py-3
+            rounded-xl
+            font-medium
+            transition
+            whitespace-nowrap
+          ">
+            + Add Employee
+          </button>
+
+        </div>
 
       </div>
 
@@ -209,6 +378,9 @@ function AllWorkers() {
 
       <div className="
         overflow-x-auto
+        rounded-2xl
+        border
+        border-gray-100
       ">
 
         <table className="
@@ -216,6 +388,8 @@ function AllWorkers() {
           text-left
           border-collapse
         ">
+
+          {/* TABLE HEAD */}
 
           <thead>
 
@@ -231,6 +405,14 @@ function AllWorkers() {
                 text-sm
                 font-semibold
               ">
+                Employee ID
+              </th>
+
+              <th className="
+                p-4
+                text-sm
+                font-semibold
+              ">
                 Name
               </th>
 
@@ -240,6 +422,14 @@ function AllWorkers() {
                 font-semibold
               ">
                 Company
+              </th>
+
+              <th className="
+                p-4
+                text-sm
+                font-semibold
+              ">
+                Type
               </th>
 
               <th className="
@@ -282,9 +472,19 @@ function AllWorkers() {
                 Status
               </th>
 
+              <th className="
+                p-4
+                text-sm
+                font-semibold
+              ">
+                Actions
+              </th>
+
             </tr>
 
           </thead>
+
+          {/* TABLE BODY */}
 
           <tbody>
 
@@ -293,14 +493,14 @@ function AllWorkers() {
               <tr>
 
                 <td
-                  colSpan="7"
+                  colSpan="10"
                   className="
                     p-6
                     text-center
                     text-gray-500
                   "
                 >
-                  No workers found
+                  No employees found
                 </td>
 
               </tr>
@@ -326,7 +526,17 @@ function AllWorkers() {
                     "
                   >
 
-                    {/* 👤 NAME */}
+                    {/* EMPLOYEE ID */}
+
+                    <td className="
+                      p-4
+                      font-medium
+                    ">
+                      {worker.worker_id || "-"}
+                    </td>
+
+                    {/* NAME */}
+
                     <td className="
                       p-4
                       font-medium
@@ -334,41 +544,61 @@ function AllWorkers() {
                       {worker.name}
                     </td>
 
-                    {/* 🏢 COMPANY */}
-                    <td className="
-                      p-4
-                    ">
+                    {/* COMPANY */}
+
+                    <td className="p-4">
                       {worker.company || "N/A"}
                     </td>
 
-                    {/* 🏕 CAMP */}
-                    <td className="
-                      p-4
-                    ">
+                    {/* TYPE */}
+
+                    <td className="p-4">
+
+                      <span
+                        className={`
+                          px-3
+                          py-1
+                          rounded-full
+                          text-xs
+                          font-medium
+                          ${
+                            worker.employee_type === "staff"
+                              ? "bg-blue-100 text-blue-700"
+                              : worker.employee_type === "visitor"
+                              ? "bg-purple-100 text-purple-700"
+                              : "bg-orange-100 text-orange-700"
+                          }
+                        `}
+                      >
+
+                        {worker.employee_type || "Staff"}
+
+                      </span>
+
+                    </td>
+
+                    {/* CAMP */}
+
+                    <td className="p-4">
                       {worker.camp_name ||
-                        "Unassigned"}
+                        "Main Camp"}
                     </td>
 
-                    {/* 📅 JOIN DATE */}
-                    <td className="
-                      p-4
-                    ">
-                      {worker.join_date ||
-                        "-"}
+                    {/* JOIN DATE */}
+
+                    <td className="p-4">
+                      {worker.join_date || "-"}
                     </td>
 
-                    {/* 📅 END DATE */}
-                    <td className="
-                      p-4
-                    ">
-                      {worker.end_date ||
-                        "Active"}
+                    {/* END DATE */}
+
+                    <td className="p-4">
+                      {worker.end_date || "Active"}
                     </td>
 
-                    {/* 🍽 MESS */}
-                    <td className="
-                      p-4
-                    ">
+                    {/* MESS */}
+
+                    <td className="p-4">
 
                       <span
                         className={`
@@ -391,10 +621,9 @@ function AllWorkers() {
 
                     </td>
 
-                    {/* 🟢 STATUS */}
-                    <td className="
-                      p-4
-                    ">
+                    {/* STATUS */}
+
+                    <td className="p-4">
 
                       <span
                         className={`
@@ -419,6 +648,63 @@ function AllWorkers() {
 
                     </td>
 
+                    {/* ACTIONS */}
+
+                    <td className="p-4">
+
+                      <div className="
+                        flex
+                        gap-2
+                      ">
+
+                        {/* EDIT */}
+
+                        <button
+                          onClick={() =>
+                            handleEdit(
+                              worker
+                            )
+                          }
+                          className="
+                            px-3
+                            py-1
+                            text-xs
+                            rounded-lg
+                            bg-blue-100
+                            text-blue-700
+                            hover:bg-blue-200
+                            transition
+                          "
+                        >
+                          Edit
+                        </button>
+
+                        {/* DELETE */}
+
+                        <button
+                          onClick={() =>
+                            handleDelete(
+                              worker.id
+                            )
+                          }
+                          className="
+                            px-3
+                            py-1
+                            text-xs
+                            rounded-lg
+                            bg-red-100
+                            text-red-700
+                            hover:bg-red-200
+                            transition
+                          "
+                        >
+                          Delete
+                        </button>
+
+                      </div>
+
+                    </td>
+
                   </tr>
 
                 );
@@ -432,6 +718,142 @@ function AllWorkers() {
         </table>
 
       </div>
+
+      {/* ========================= */}
+      {/* ✏️ EDIT MODAL */}
+      {/* ========================= */}
+
+      <Dialog
+  open={openEdit}
+  onClose={() =>
+    setOpenEdit(false)
+  }
+  disableRestoreFocus
+  maxWidth="sm"
+  fullWidth
+>
+
+        <DialogTitle>
+          Edit Employee
+        </DialogTitle>
+
+        <DialogContent
+          className="
+            flex
+            flex-col
+            gap-4
+            pt-4
+          "
+        >
+
+          <TextField
+            label="Name"
+            value={
+              editWorker?.name || ""
+            }
+            onChange={(e) =>
+              setEditWorker({
+                ...editWorker,
+                name:
+                  e.target.value
+              })
+            }
+          />
+
+          <TextField
+            label="Company"
+            value={
+              editWorker?.company ||
+              ""
+            }
+            onChange={(e) =>
+              setEditWorker({
+                ...editWorker,
+                company:
+                  e.target.value
+              })
+            }
+          />
+
+          <TextField
+            label="Mobile"
+            value={
+              editWorker?.mobile ||
+              ""
+            }
+            onChange={(e) =>
+              setEditWorker({
+                ...editWorker,
+                mobile:
+                  e.target.value
+              })
+            }
+          />
+
+          <TextField
+  label="Join Date"
+  type="date"
+  slotProps={{
+    inputLabel: {
+      shrink: true
+    }
+  }}
+            value={
+              editWorker?.join_date ||
+              ""
+            }
+            onChange={(e) =>
+              setEditWorker({
+                ...editWorker,
+                join_date:
+                  e.target.value
+              })
+            }
+          />
+
+          <TextField
+            label="End Date"
+            type="date"
+           slotProps={{
+    inputLabel: {
+      shrink: true
+    }
+  }}
+            value={
+              editWorker?.end_date ||
+              ""
+            }
+            onChange={(e) =>
+              setEditWorker({
+                ...editWorker,
+                end_date:
+                  e.target.value
+              })
+            }
+          />
+
+        </DialogContent>
+
+        <DialogActions>
+
+          <Button
+            onClick={() =>
+              setOpenEdit(false)
+            }
+          >
+            Cancel
+          </Button>
+
+          <Button
+            variant="contained"
+            onClick={handleUpdate}
+          >
+            Save Changes
+          </Button>
+
+        </DialogActions>
+
+      </Dialog>
 
     </div>
 

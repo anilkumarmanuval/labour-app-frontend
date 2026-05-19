@@ -1,0 +1,110 @@
+.employee-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.employee-card {
+  width: 1100px;
+  min-height: 680px;
+  display: flex;
+  border-radius: 24px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+}
+
+.left-panel {
+  width: 38%;
+  background: linear-gradient(180deg, #0f172a, #1e3a8a);
+  color: white;
+  padding: 50px 35px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.company-logo {
+  width: 140px;
+  margin-bottom: 30px;
+}
+
+.left-title {
+  font-weight: 800 !important;
+  margin-bottom: 10px !important;
+}
+
+.left-subtitle {
+  font-weight: 600 !important;
+  margin-bottom: 25px !important;
+}
+
+.left-description {
+  font-size: 15px;
+  line-height: 1.7;
+  opacity: 0.9;
+}
+
+.right-panel {
+  flex: 1;
+  padding: 50px;
+  background: #f8fafc;
+}
+
+.form-title {
+  font-weight: 700 !important;
+  margin-bottom: 25px !important;
+  color: #0f172a;
+}
+
+.employee-type-box {
+  display: flex;
+  gap: 20px;
+  padding: 14px 18px;
+  background: white;
+  border-radius: 14px;
+  margin-bottom: 25px;
+}
+
+.employee-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.employee-form .MuiTextField-root {
+  background: white;
+  border-radius: 10px;
+}
+
+.company-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.company-row .MuiTextField-root {
+  flex: 1;
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.button-group button {
+  width: 180px;
+  height: 44px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 10px !important;
+}
