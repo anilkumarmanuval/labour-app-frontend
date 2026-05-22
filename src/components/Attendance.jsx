@@ -337,10 +337,19 @@ function Attendance({ campId }) {
         if (!workerId) return;
 
         const worker =
-          workers.find(
-            (w) =>
-              w.worker_id === workerId
-          );
+  workers.find(
+    (w) =>
+
+      String(w.worker_id)
+        .trim()
+        .toLowerCase()
+
+      ===
+
+      String(workerId)
+        .trim()
+        .toLowerCase()
+  );
 
         if (!worker) {
 
