@@ -201,38 +201,75 @@ function WorkerForm({ campId }) {
   // =========================
   // SAVE COMPANY
   // =========================
+const handleSubSubmit =
+async (e) => {
 
-  const handleSubSubmit = async (e) => {
+  e.preventDefault();
 
-    e.preventDefault();
+  try {
 
-    try {
+    await POST(
+      "/subcontractors",
+      subForm
+    );
 
-      await POST("/subcontractors", subForm);
+    setForm((prev) => ({
+      ...prev,
+      company:
+        subForm.company_name
+    }));
 
-      alert("Company added!");
+    alert(
+      "Company added!"
+    );
 
-      // AUTO FILL COMPANY
+  } catch (err) {
+
+    console.error(err);
+
+    if (
+
+      err.message.includes(
+        "Company already exists"
+      )
+
+    ) {
 
       setForm((prev) => ({
         ...prev,
-        company: subForm.company_name
+        company:
+          subForm.company_name
       }));
 
-      setOpenSubModal(false);
-
-      setSubForm({
-        company_name: "",
-        address: "",
-        trn: ""
-      });
-
-    } catch (err) {
-
-      alert(err.message);
+      alert(
+        "Using existing company"
+      );
 
     }
-  };
+
+    else {
+
+      alert(
+        err.message
+      );
+
+      return;
+
+    }
+
+  }
+
+  setOpenSubModal(false);
+
+  setSubForm({
+
+    company_name: "",
+    address: "",
+    trn: ""
+
+  });
+
+};
 
   return (
 
@@ -252,12 +289,7 @@ function WorkerForm({ campId }) {
             className="company-logo"
           />
 
-          <Typography
-            variant="h3"
-            className="left-title"
-          >
-            EOG
-          </Typography>
+
 
           <Typography
             variant="h4"

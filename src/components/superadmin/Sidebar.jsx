@@ -9,6 +9,7 @@ import {
   Layers,
   LogOut,
   Cpu,
+  CreditCard,
   FileSpreadsheet
 } from "lucide-react";
 
@@ -52,7 +53,12 @@ const MENU = {
   path: "/reports",
   label: "Reports",
   icon: FileSpreadsheet
-}
+},
+{
+      path: "/cards",
+      label: "Card Management", 
+      icon: CreditCard          
+    }
   ],
 
   // 🟡 CAMP ADMIN
@@ -124,7 +130,7 @@ function Sidebar({ role }) {
   />
 
   <h2 className="text-xl font-bold text-blue-600 leading-tight">
-    EOG Camp
+     Camp
     <br />
     Management System
   </h2>

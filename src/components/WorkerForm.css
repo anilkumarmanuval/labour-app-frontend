@@ -1,18 +1,27 @@
 .employee-page {
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 40px;
+  align-items: flex-start;
+
+  padding: 20px;
+
+  min-height: calc(100vh - 90px);
+
+  overflow: hidden;
 }
 
 .employee-card {
   width: 1100px;
-  min-height: 680px;
+
   display: flex;
+
   border-radius: 24px;
   overflow: hidden;
+
   background: white;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+
+  box-shadow:
+  0 10px 30px rgba(0,0,0,0.12);
 }
 
 .left-panel {

@@ -1,90 +1,38 @@
-import {
-  useEffect,
-  useMemo,
-  useState
-} from "react";
-
-import {
-  GET,
-  DELETE,
-  PUT
-} from "../../utils/api";
-
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button
-} from "@mui/material";
+import { useEffect, useMemo, useState} from "react";
+import { GET, DELETE, PUT} from "../../utils/api";
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button} from "@mui/material";
 
 function AllWorkers() {
-
-  const [workers, setWorkers] =
-    useState([]);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState("");
-
+  const [workers, setWorkers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   // 🔍 SEARCH
-
-  const [search, setSearch] =
-    useState("");
-
+  const [search, setSearch] = useState("");
   // ✏️ EDIT MODAL
-
-  const [openEdit, setOpenEdit] =
-    useState(false);
-
-  const [editWorker, setEditWorker] =
-    useState(null);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editWorker, setEditWorker] = useState(null);
 
   // =========================
   // 🔄 FETCH
   // =========================
 
   useEffect(() => {
-
     const fetchWorkers =
       async () => {
-
       try {
-
         setLoading(true);
-
         setError("");
-
         const data =
           await GET("/all-workers");
-
         setWorkers(data || []);
-
       } catch (err) {
-
-        console.error(
-          "Workers fetch error:",
-          err
-        );
-
-        setError(
-          err.message ||
-          "Failed to fetch workers"
-        );
-
+        console.error( "Workers fetch error:", err);
+        setError( err.message || "Failed to fetch workers" );
       } finally {
-
         setLoading(false);
-
       }
-
     };
-
     fetchWorkers();
-
   }, []);
 
   // =========================
@@ -94,11 +42,8 @@ function AllWorkers() {
   const handleEdit = (
     worker
   ) => {
-
     setEditWorker(worker);
-
     setOpenEdit(true);
-
   };
 
   // =========================
@@ -107,14 +52,8 @@ function AllWorkers() {
 
   const handleUpdate =
     async () => {
-
     try {
-
-      await PUT(
-        `/workers/${editWorker.id}`,
-        editWorker
-      );
-
+      await PUT( `/workers/${editWorker.id}`, editWorker);
       setWorkers((prev) =>
         prev.map((worker) =>
           worker.id ===
@@ -123,18 +62,13 @@ function AllWorkers() {
             : worker
         )
       );
-
       setOpenEdit(false);
-
     } catch (err) {
-
       alert(
         err.message ||
         "Update failed"
       );
-
     }
-
   };
 
   // =========================
@@ -143,36 +77,18 @@ function AllWorkers() {
 
   const handleDelete =
     async (id) => {
-
-    const confirmDelete =
-      window.confirm(
-        "Delete this employee?"
-      );
-
+    const confirmDelete = window.confirm( "Delete this employee?" );
     if (!confirmDelete) return;
-
     try {
-
-      await DELETE(
-        `/workers/${id}`
+      await DELETE( `/workers/${id}` );
+      setWorkers((prev) => prev.filter( (worker) => worker.id !== id )
       );
-
-      setWorkers((prev) =>
-        prev.filter(
-          (worker) =>
-            worker.id !== id
-        )
-      );
-
     } catch (err) {
-
       alert(
         err.message ||
         "Delete failed"
       );
-
     }
-
   };
 
   // =========================
@@ -181,68 +97,41 @@ function AllWorkers() {
 
   const filteredWorkers =
     useMemo(() => {
-
       return workers.filter(
         (worker) => {
-
         const text =
           search.toLowerCase();
-
         return (
-
           worker.name
             ?.toLowerCase()
             .includes(text)
-
           ||
-
           worker.company
             ?.toLowerCase()
             .includes(text)
-
           ||
-
           worker.camp_name
             ?.toLowerCase()
             .includes(text)
-
           ||
-
           worker.employee_type
             ?.toLowerCase()
             .includes(text)
-
           ||
-
           worker.worker_id
             ?.toLowerCase()
             .includes(text)
-
         );
-
       });
-
     }, [workers, search]);
-
   // =========================
   // ⏳ LOADING
   // =========================
 
   if (loading) {
-
     return (
-      <div className="
-        flex
-        justify-center
-        items-center
-        min-h-[300px]
-        text-lg
-        font-medium
-      ">
-        Loading employees...
-      </div>
+      <div className=" flex justify-center items-center min-h-[300px] text-lg font-medium "> Loading employees... </div>
     );
-
   }
 
   // =========================
@@ -354,19 +243,7 @@ function AllWorkers() {
 
           {/* ADD BUTTON */}
 
-          <button className="
-            bg-blue-600
-            hover:bg-blue-700
-            text-white
-            px-5
-            py-3
-            rounded-xl
-            font-medium
-            transition
-            whitespace-nowrap
-          ">
-            + Add Employee
-          </button>
+
 
         </div>
 

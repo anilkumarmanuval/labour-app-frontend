@@ -1,30 +1,31 @@
-import { useEffect, useState } from "react";
-import { GET } from "../utils/api";
+import {
+  useEffect,
+  useState,
+  useCallback
+} from "react";
+
+import { GET }
+from "../utils/api";
 
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer
-} from "recharts";
 
-import {
   Users,
+  Utensils,
   BedDouble,
-  Building2,
-  CheckCircle,
-  XCircle
+  Activity,
+  Wifi,
+  WifiOff,
+  LogOut,
+  Clock
+
 } from "lucide-react";
 
-function Dashboard({ role, campId }) {
+function Dashboard({
+  role,
+  campId
+}) {
 
-  const [stats, setStats] = useState(null);
-
-  const [layout, setLayout] = useState([]);
-
-  const [adminData, setAdminData] =
+  const [dashboard, setDashboard] =
     useState(null);
 
   const [loading, setLoading] =
@@ -33,694 +34,217 @@ function Dashboard({ role, campId }) {
   const [error, setError] =
     useState(null);
 
-  // =========================
-  // 🔄 FETCH DATA
-  // =========================
-  useEffect(() => {
+  const [currentTime, setCurrentTime] =
+    useState(
+      new Date()
+    );
 
-    const fetchData = async () => {
+  // =====================================
+  // FETCH DASHBOARD
+  // =====================================
 
-      try {
+  const fetchDashboard =
+    useCallback(
 
-        setLoading(true);
+      async (signal) => {
 
-        // 🟡 CAMP ADMIN
-        if (role === "campadmin") {
+        try {
 
-          if (!campId) {
-            throw new Error(
-              "Camp ID missing"
-            );
+          setError(null);
+
+          let url =
+            "/dashboard/live";
+
+          if (
+            role ===
+            "campadmin"
+          ) {
+
+            if (!campId) {
+
+              throw new Error(
+                "Camp ID missing"
+              );
+
+            }
+
+            url +=
+              `?camp_id=${campId}`;
+
           }
-
-          const statsData =
-            await GET(
-              `/dashboard?camp_id=${campId}`
-            );
-
-          const layoutData =
-            await GET(
-              `/layout?camp_id=${campId}`
-            );
-
-          setStats(statsData);
-
-          setLayout(layoutData);
-
-        }
-
-        // 🔴 SUPER ADMIN
-        if (role === "superadmin") {
 
           const data =
             await GET(
-              "/admin-dashboard"
+              url,
+              { signal }
             );
 
-          setAdminData(data);
+          setDashboard(data);
 
-        }
+        } catch (err) {
 
-      } catch (err) {
+          if (
+            err.name !==
+            "AbortError"
+          ) {
 
-        console.error(
-          "Dashboard error:",
-          err
-        );
+            console.error(
+              "Dashboard error:",
+              err
+            );
 
-        setError(err.message);
+            setError(
+              err.message
+            );
 
-      } finally {
-
-        setLoading(false);
-
-      }
-
-    };
-
-    fetchData();
-
-  }, [role, campId]);
-
-  // =========================
-  // 📥 DOWNLOAD
-  // =========================
-  const download = async (
-    url,
-    name
-  ) => {
-
-    try {
-
-      const res = await fetch(
-        `http://localhost:5000${url}`,
-        {
-          headers: {
-            Authorization:
-              `Bearer ${localStorage.getItem("token")}`
           }
+
+        } finally {
+
+          setLoading(false);
+
         }
+
+      },
+
+      [role, campId]
+    );
+
+  // =====================================
+  // INITIAL LOAD
+  // =====================================
+
+  useEffect(() => {
+
+    const controller =
+      new AbortController();
+
+    fetchDashboard(
+      controller.signal
+    );
+
+    return () =>
+      controller.abort();
+
+  }, [fetchDashboard]);
+
+  // =====================================
+  // AUTO REFRESH
+  // =====================================
+
+  useEffect(() => {
+
+    const interval =
+      setInterval(() => {
+
+        fetchDashboard();
+
+      }, 10000);
+
+    return () =>
+      clearInterval(
+        interval
       );
 
-      if (!res.ok) {
-        throw new Error(
-          "Download failed"
+  }, [fetchDashboard]);
+
+  // =====================================
+  // LIVE CLOCK
+  // =====================================
+
+  useEffect(() => {
+
+    const timer =
+      setInterval(() => {
+
+        setCurrentTime(
+          new Date()
         );
-      }
 
-      const blob =
-        await res.blob();
+      }, 1000);
 
-      const a =
-        document.createElement("a");
+    return () =>
+      clearInterval(timer);
 
-      a.href =
-        URL.createObjectURL(blob);
+  }, []);
 
-      a.download = name;
+  // =====================================
+  // LOADING
+  // =====================================
 
-      a.click();
-
-    } catch (err) {
-
-      console.error(err);
-
-      alert(err.message);
-
-    }
-
-  };
-
-  // =========================
-  // ⏳ LOADING
-  // =========================
-  if (loading) {
+  if (
+    loading &&
+    !dashboard
+  ) {
 
     return (
+
       <div className="
         p-8
-        text-lg
+        text-gray-500
       ">
         Loading dashboard...
       </div>
+
     );
 
   }
 
-  // =========================
-  // ❌ ERROR
-  // =========================
+  // =====================================
+  // ERROR
+  // =====================================
+
   if (error) {
 
     return (
+
       <div className="
         p-8
         text-red-500
       ">
         {error}
       </div>
-    );
-
-  }
-
-  // =========================
-  // 🔴 SUPER ADMIN
-  // =========================
-  if (
-    role === "superadmin" &&
-    adminData
-  ) {
-
-    return (
-
-      <div className="space-y-8">
-
-        {/* HEADER */}
-        <div className="
-          bg-gradient-to-r
-          from-blue-600
-          to-indigo-700
-          text-white
-          p-8
-          rounded-3xl
-          shadow-xl
-          flex
-          justify-between
-          items-center
-          flex-wrap
-          gap-4
-        ">
-
-          <div>
-
-            <h1 className="
-              text-3xl
-              font-bold
-            ">
-              Super Admin Dashboard
-            </h1>
-
-            <p className="
-              text-blue-100
-              mt-2
-            ">
-              Workforce Management Overview
-            </p>
-
-          </div>
-
-          <div className="
-            flex
-            gap-3
-            flex-wrap
-          ">
-
-            <button
-              onClick={() =>
-                download(
-                  `/report/attendance?camp_id=${campId}`,
-                  "attendance.xlsx"
-                )
-              }
-              className="
-                bg-white
-                text-blue-600
-                px-4
-                py-2
-                rounded-xl
-                font-medium
-                hover:scale-105
-                transition
-              "
-            >
-              Attendance Excel
-            </button>
-
-            <button
-              onClick={() =>
-                download(
-                  `/report/mess?camp_id=${campId}`,
-                  "mess.xlsx"
-                )
-              }
-              className="
-                bg-white
-                text-green-600
-                px-4
-                py-2
-                rounded-xl
-                font-medium
-                hover:scale-105
-                transition
-              "
-            >
-              Mess Excel
-            </button>
-
-            <button
-              onClick={() =>
-                download(
-                  `/report/rooms?camp_id=${campId}`,
-                  "rooms.xlsx"
-                )
-              }
-              className="
-                bg-white
-                text-orange-600
-                px-4
-                py-2
-                rounded-xl
-                font-medium
-                hover:scale-105
-                transition
-              "
-            >
-              Room Excel
-            </button>
-
-          </div>
-
-        </div>
-
-        {/* STATS */}
-        <div className="
-          grid
-          grid-cols-1
-          md:grid-cols-3
-          gap-6
-        ">
-
-          <Stat
-            title="Total Camps"
-            value={
-              adminData?.camps?.length || 0
-            }
-            icon={Building2}
-            color="
-              from-orange-500
-              to-red-500
-            "
-          />
-
-          <Stat
-            title="Total Workers"
-            value={
-              adminData?.workers?.length || 0
-            }
-            icon={Users}
-            color="
-              from-blue-500
-              to-indigo-600
-            "
-          />
-
-          <Stat
-            title="Total Beds"
-            value={
-              adminData?.beds || 0
-            }
-            icon={BedDouble}
-            color="
-              from-green-500
-              to-emerald-600
-            "
-          />
-
-        </div>
-
-        {/* CHART */}
-        <Chart
-          data={
-            adminData?.chart || []
-          }
-        />
-
-      </div>
 
     );
 
   }
 
-  // =========================
-  // 🟡 CAMP ADMIN
-  // =========================
-  if (
-    role === "campadmin" &&
-    stats
-  ) {
-
-    const present =
-      stats?.occupied || 0;
-
-    const absent =
-      (stats?.workers || 0)
-      - present;
-
-    return (
-
-      <div className="
-        space-y-8
-      ">
-
-        {/* HEADER */}
-        <div className="
-          bg-gradient-to-r
-          from-green-500
-          to-emerald-600
-          text-white
-          p-8
-          rounded-3xl
-          shadow-xl
-        ">
-
-          <h1 className="
-            text-3xl
-            font-bold
-          ">
-            Camp Dashboard
-          </h1>
-
-          <p className="
-            mt-2
-            text-green-100
-          ">
-            Real-time workforce overview
-          </p>
-
-        </div>
-
-        {/* STATS */}
-        <div className="
-          grid
-          grid-cols-1
-          md:grid-cols-3
-          gap-6
-        ">
-
-          <Stat
-            title="Workers"
-            value={
-              stats?.workers || 0
-            }
-            icon={Users}
-            color="
-              from-blue-500
-              to-indigo-600
-            "
-          />
-
-          <Stat
-            title="Rooms"
-            value={
-              stats?.rooms || 0
-            }
-            icon={BedDouble}
-            color="
-              from-green-500
-              to-emerald-600
-            "
-          />
-
-          <Stat
-            title="Beds Used"
-            value={
-              stats?.occupied || 0
-            }
-            icon={Building2}
-            color="
-              from-orange-500
-              to-red-500
-            "
-          />
-
-        </div>
-
-        {/* ATTENDANCE SUMMARY */}
-        <div className="
-          grid
-          grid-cols-1
-          md:grid-cols-2
-          gap-6
-        ">
-
-          <div className="
-            bg-green-500
-            text-white
-            p-6
-            rounded-3xl
-            shadow-lg
-          ">
-
-            <div className="
-              flex
-              justify-between
-              items-center
-            ">
-
-              <div>
-
-                <h3 className="
-                  text-lg
-                  font-semibold
-                ">
-                  Present Today
-                </h3>
-
-                <p className="
-                  text-5xl
-                  font-bold
-                  mt-3
-                ">
-                  {present}
-                </p>
-
-              </div>
-
-              <CheckCircle size={50} />
-
-            </div>
-
-          </div>
-
-          <div className="
-            bg-red-500
-            text-white
-            p-6
-            rounded-3xl
-            shadow-lg
-          ">
-
-            <div className="
-              flex
-              justify-between
-              items-center
-            ">
-
-              <div>
-
-                <h3 className="
-                  text-lg
-                  font-semibold
-                ">
-                  Empty Beds
-                </h3>
-
-                <p className="
-                  text-5xl
-                  font-bold
-                  mt-3
-                ">
-                  {absent}
-                </p>
-
-              </div>
-
-              <XCircle size={50} />
-
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* ROOM TABLE */}
-        <div className="
-          bg-white
-          p-8
-          rounded-3xl
-          shadow-xl
-        ">
-
-          <div className="
-            flex
-            justify-between
-            items-center
-            mb-6
-          ">
-
-            <h3 className="
-              text-2xl
-              font-bold
-            ">
-              Room Assignments
-            </h3>
-
-          </div>
-
-          <div className="
-            overflow-x-auto
-          ">
-
-            <table className="
-              w-full
-              text-left
-            ">
-
-              <thead>
-
-                <tr className="
-                  bg-gray-100
-                  text-gray-700
-                ">
-
-                  <th className="
-                    p-4
-                    rounded-l-xl
-                  ">
-                    Room
-                  </th>
-
-                  <th className="
-                    p-4
-                  ">
-                    Bed
-                  </th>
-
-                  <th className="
-                    p-4
-                    rounded-r-xl
-                  ">
-                    Worker
-                  </th>
-
-                </tr>
-
-              </thead>
-
-              <tbody>
-
-                {layout.map((r) => (
-
-                  <tr
-                    key={r.bed_id}
-                    className="
-                      border-b
-                      hover:bg-gray-50
-                      transition
-                    "
-                  >
-
-                    <td className="
-                      p-4
-                      font-medium
-                    ">
-                      {r.room_number}
-                    </td>
-
-                    <td className="
-                      p-4
-                    ">
-                      {r.bed_number}
-                    </td>
-
-                    <td className="
-                      p-4
-                    ">
-
-                      {r.worker_name ? (
-
-                        <span className="
-                          bg-green-100
-                          text-green-700
-                          px-3
-                          py-1
-                          rounded-full
-                          text-sm
-                          font-medium
-                        ">
-                          {r.worker_name}
-                        </span>
-
-                      ) : (
-
-                        <span className="
-                          bg-gray-200
-                          text-gray-600
-                          px-3
-                          py-1
-                          rounded-full
-                          text-sm
-                        ">
-                          Empty
-                        </span>
-
-                      )}
-
-                    </td>
-
-                  </tr>
-
-                ))}
-
-              </tbody>
-
-            </table>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    );
-
-  }
+  // =====================================
+  // DATA
+  // =====================================
+
+  const stats =
+    dashboard?.stats || {};
+
+  const devices =
+    dashboard?.devices || [];
+
+  // =====================================
+  // UI
+  // =====================================
 
   return (
+
     <div className="
-      p-8
-      text-gray-500
-    ">
-      No data available
-    </div>
-  );
-
-}
-
-// =========================
-// 📊 STAT CARD
-// =========================
-function Stat({
-  title,
-  value,
-  icon: Icon,
-  color
-}) {
-
-  return (
-
-    <div className={`
-      bg-gradient-to-r
-      ${color}
-      text-white
       p-6
-      rounded-3xl
-      shadow-lg
-      hover:scale-105
-      transition
-    `}>
+      space-y-8
+      bg-gray-50
+      min-h-screen
+    ">
+
+      {/* HEADER */}
 
       <div className="
+        bg-gradient-to-r
+        from-indigo-600
+        to-blue-600
+
+        text-white
+
+        p-8
+        rounded-3xl
+        shadow-xl
+
         flex
         justify-between
         items-center
@@ -728,24 +252,297 @@ function Stat({
 
         <div>
 
-          <p className="
-            text-sm
-            opacity-80
-          ">
-            {title}
-          </p>
-
-          <h2 className="
+          <h1 className="
             text-4xl
             font-bold
-            mt-2
           ">
-            {value}
-          </h2>
+            Operations Dashboard
+          </h1>
+
+          <p className="
+            mt-2
+            text-indigo-100
+          ">
+            Real-time labour camp monitoring
+          </p>
 
         </div>
 
-        <Icon size={45} />
+        <div className="
+          text-right
+        ">
+
+          <div className="
+            flex
+            items-center
+            gap-2
+            justify-end
+          ">
+
+            <Clock size={18} />
+
+            <span className="
+              text-lg
+              font-medium
+            ">
+              {currentTime.toLocaleTimeString()}
+            </span>
+
+          </div>
+
+          <div className="
+            text-indigo-100
+            mt-1
+            text-sm
+          ">
+            {currentTime.toDateString()}
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* LIVE STATS */}
+
+      <div className="
+        grid
+        grid-cols-1
+        sm:grid-cols-2
+        lg:grid-cols-4
+        gap-6
+      ">
+
+        <StatCard
+          title="Workers Inside"
+          value={stats.inside || 0}
+          icon={Users}
+          color="from-blue-500 to-indigo-600"
+        />
+
+        <StatCard
+          title="Checked Out"
+          value={stats.checkedOut || 0}
+          icon={LogOut}
+          color="from-red-500 to-pink-600"
+        />
+
+        <StatCard
+          title="Breakfast"
+          value={stats.breakfast || 0}
+          icon={Utensils}
+          color="from-yellow-500 to-orange-500"
+        />
+
+        <StatCard
+          title="Lunch"
+          value={stats.lunch || 0}
+          icon={Utensils}
+          color="from-green-500 to-emerald-600"
+        />
+
+        <StatCard
+          title="Dinner"
+          value={stats.dinner || 0}
+          icon={Utensils}
+          color="from-purple-500 to-violet-600"
+        />
+
+        <StatCard
+          title="Occupied Beds"
+          value={stats.occupiedBeds || 0}
+          icon={BedDouble}
+          color="from-cyan-500 to-blue-500"
+        />
+
+        <StatCard
+          title="Active Devices"
+          value={stats.activeDevices || 0}
+          icon={Activity}
+          color="from-emerald-500 to-green-600"
+        />
+
+        <StatCard
+          title="Total Workers"
+          value={stats.totalWorkers || 0}
+          icon={Users}
+          color="from-gray-700 to-gray-900"
+        />
+
+      </div>
+
+      {/* DEVICE STATUS */}
+
+      <div className="
+        bg-white
+        rounded-3xl
+        shadow-xl
+        p-6
+      ">
+
+        <div className="
+          flex
+          justify-between
+          items-center
+          mb-6
+        ">
+
+          <h2 className="
+            text-2xl
+            font-bold
+          ">
+            Device Status
+          </h2>
+
+          <button
+            onClick={() =>
+              fetchDashboard()
+            }
+            className="
+              bg-black
+              text-white
+              px-4
+              py-2
+              rounded-xl
+              hover:bg-gray-800
+              transition
+            "
+          >
+            Refresh
+          </button>
+
+        </div>
+
+        <div className="
+          grid
+          grid-cols-1
+          md:grid-cols-2
+          lg:grid-cols-3
+          gap-5
+        ">
+
+          {devices.map((d) => (
+
+            <div
+              key={d.id}
+              className="
+                border
+                rounded-2xl
+                p-5
+                hover:shadow-lg
+                transition
+                bg-gray-50
+              "
+            >
+
+              <div className="
+                flex
+                justify-between
+                items-start
+              ">
+
+                <div>
+
+                  <h3 className="
+                    text-lg
+                    font-bold
+                  ">
+                    {d.device_name}
+                  </h3>
+
+                  <div className="
+                    mt-2
+                    flex
+                    gap-2
+                  ">
+
+                    <span className="
+                      px-3
+                      py-1
+                      rounded-full
+                      text-xs
+                      bg-indigo-100
+                      text-indigo-700
+                      font-medium
+                    ">
+                      {d.device_mode}
+                    </span>
+
+                    <span className={`
+                      px-3
+                      py-1
+                      rounded-full
+                      text-xs
+                      font-medium
+
+                      ${
+
+                        d.status ===
+                        "online"
+
+                          ? "bg-green-100 text-green-700"
+
+                          : "bg-red-100 text-red-700"
+
+                      }
+                    `}>
+
+                      {d.status}
+
+                    </span>
+
+                  </div>
+
+                </div>
+
+                {
+
+                  d.status ===
+                  "online"
+
+                    ? (
+                      <Wifi className="
+                        text-green-500
+                      " />
+                    )
+
+                    : (
+                      <WifiOff className="
+                        text-red-500
+                      " />
+                    )
+
+                }
+
+              </div>
+
+              <div className="
+                mt-5
+                text-sm
+                text-gray-500
+                space-y-1
+              ">
+
+                <div>
+                  Serial:
+                  {" "}
+                  {d.serial_number}
+                </div>
+
+                <div>
+                  Last Seen:
+                  {" "}
+                  {new Date(
+                    d.last_seen
+                  ).toLocaleString()}
+                </div>
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
 
       </div>
 
@@ -755,57 +552,61 @@ function Stat({
 
 }
 
-// =========================
-// 📈 CHART
-// =========================
-function Chart({ data }) {
+// =====================================
+// STAT CARD
+// =====================================
 
-  const fixedData =
-    (data || []).map(d => ({
-      ...d,
-      workers: Number(d.workers)
-    }));
+function StatCard({
+
+  title,
+  value,
+  icon: Icon,
+  color
+
+}) {
 
   return (
 
-    <div className="
-      bg-white
-      p-8
+    <div className={`
+
+      bg-gradient-to-r
+      ${color}
+
+      text-white
+
+      p-6
       rounded-3xl
-      shadow-xl
-    ">
+      shadow-lg
 
-      <h3 className="
-        text-2xl
-        font-bold
-        mb-6
-      ">
-        Workers per Camp
-      </h3>
+      hover:scale-105
+      transition
 
-      <ResponsiveContainer
-        width="100%"
-        height={320}
-      >
+      flex
+      justify-between
+      items-center
 
-        <LineChart data={fixedData}>
+    `}>
 
-          <XAxis dataKey="name" />
+      <div>
 
-          <YAxis />
+        <p className="
+          text-sm
+          opacity-80
+        ">
+          {title}
+        </p>
 
-          <Tooltip />
+        <h2 className="
+          text-4xl
+          font-bold
+          mt-2
+        ">
+          {value}
+        </h2>
 
-          <Line
-            type="monotone"
-            dataKey="workers"
-            stroke="#4f46e5"
-            strokeWidth={4}
-          />
+      </div>
 
-        </LineChart>
-
-      </ResponsiveContainer>
+      <Icon size={46} />
 
     </div>
 

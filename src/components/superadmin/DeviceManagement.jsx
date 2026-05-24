@@ -275,225 +275,319 @@ function DeviceManagement() {
 
           devices.map((device) => (
 
-            <div
-              key={device.id}
-              className="
-                bg-white
-                rounded-2xl
-                shadow-lg
-                p-6
-                border
-                border-gray-100
-              "
-            >
+  <div
+    key={device.id}
+    className="
+      bg-white
+      rounded-2xl
+      shadow-lg
+      p-6
+      border
+      border-gray-100
+    "
+  >
 
-              {/* TOP */}
+    {/* TOP */}
 
-              <div className="
-                flex
-                justify-between
-                items-start
-                mb-5
-              ">
+    <div className="
+      flex
+      justify-between
+      items-start
+      mb-5
+    ">
 
-                <div className="
-                  flex
-                  items-center
-                  gap-3
-                ">
+      <div className="
+        flex
+        items-center
+        gap-3
+      ">
 
-                  <div className="
-                    bg-blue-100
-                    p-3
-                    rounded-xl
-                  ">
+        <div className="
+          bg-blue-100
+          p-3
+          rounded-xl
+        ">
 
-                    <Cpu
-                      className="
-                        text-blue-600
-                      "
-                    />
+          <Cpu
+            className="
+              text-blue-600
+            "
+          />
 
-                  </div>
+        </div>
 
-                  <div>
+        <div>
 
-                    <h2 className="
-                      text-lg
-                      font-bold
-                    ">
-                      {
-                        device.device_name
-                      }
-                    </h2>
+          <h2 className="
+            text-lg
+            font-bold
+          ">
+            {
+              device.device_name
+            }
+          </h2>
 
-                    <p className="
-                      text-sm
-                      text-gray-500
-                    ">
-                      {
-                        device.serial_number
-                      }
-                    </p>
+          <p className="
+            text-sm
+            text-gray-500
+          ">
+            {
+              device.serial_number
+            }
+          </p>
 
-                  </div>
+        </div>
 
-                </div>
+      </div>
 
-                <div className="
-                  flex
-                  items-center
-                  gap-2
-                ">
+      <div className="
+        flex
+        items-center
+        gap-2
+      ">
 
-                  <button
-                    onClick={() =>
-                      handleRename(device)
-                    }
-                    className="
-                      text-blue-500
-                    "
-                  >
+        <button
+          onClick={() =>
+            handleRename(device)
+          }
+          className="
+            text-blue-500
+          "
+        >
 
-                    <Pencil size={18} />
+          <Pencil size={18} />
 
-                  </button>
+        </button>
 
-                  <button
-                    onClick={() =>
-                      handleDelete(device.id)
-                    }
-                    className="
-                      text-red-500
-                    "
-                  >
+        <button
+          onClick={() =>
+            handleDelete(device.id)
+          }
+          className="
+            text-red-500
+          "
+        >
 
-                    <Trash2 size={18} />
+          <Trash2 size={18} />
 
-                  </button>
+        </button>
 
-                </div>
+      </div>
 
-              </div>
+    </div>
 
-              {/* DETAILS */}
+    {/* DETAILS */}
 
-              <div className="
-                space-y-3
-                text-sm
-              ">
+    <div className="
+      space-y-4
+      text-sm
+    ">
 
-                <div className="
-                  flex
-                  justify-between
-                ">
+      {/* IP */}
 
-                  <span className="
-                    text-gray-500
-                  ">
-                    IP Address
-                  </span>
+      <div className="
+        flex
+        justify-between
+      ">
 
-                  <span>
-                    {
-                      device.ip_address || "-"
-                    }
-                  </span>
+        <span className="
+          text-gray-500
+        ">
+          IP Address
+        </span>
 
-                </div>
+        <span>
+          {
+            device.ip_address || "-"
+          }
+        </span>
 
-                <div className="
-                  flex
-                  justify-between
-                ">
+      </div>
 
-                  <span className="
-                    text-gray-500
-                  ">
-                    Firmware
-                  </span>
+      {/* FIRMWARE */}
 
-                  <span>
-                    {
-                      device.firmware_version || "-"
-                    }
-                  </span>
+      <div className="
+        flex
+        justify-between
+      ">
 
-                </div>
+        <span className="
+          text-gray-500
+        ">
+          Firmware
+        </span>
 
-                <div className="
-                  flex
-                  justify-between
-                ">
+        <span className="
+          text-right
+          text-xs
+        ">
+          {
+            device.firmware_version || "-"
+          }
+        </span>
 
-                  <span className="
-                    text-gray-500
-                  ">
-                    Last Seen
-                  </span>
+      </div>
 
-                  <span>
-                    {
-                      device.last_seen
-                        ? new Date(
-                            device.last_seen
-                          ).toLocaleString()
-                        : "-"
-                    }
-                  </span>
+      {/* LAST SEEN */}
 
-                </div>
+      <div className="
+        flex
+        justify-between
+      ">
 
-                <div className="
-                  flex
-                  justify-between
-                  items-center
-                ">
+        <span className="
+          text-gray-500
+        ">
+          Last Seen
+        </span>
 
-                  <span className="
-                    text-gray-500
-                  ">
-                    Status
-                  </span>
+        <span className="
+          text-right
+          text-xs
+        ">
+          {
+            device.last_seen
+              ? new Date(
+                  device.last_seen
+                ).toLocaleString()
+              : "-"
+          }
+        </span>
 
-                  <span className={`
-                    flex
-                    items-center
-                    gap-1
-                    px-3
-                    py-1
-                    rounded-full
-                    text-xs
-                    font-medium
+      </div>
 
-                    ${
-                      device.status === "online"
+      {/* DEVICE MODE */}
 
-                        ? "bg-green-100 text-green-700"
+      <div className="
+        flex
+        justify-between
+        items-center
+      ">
 
-                        : "bg-red-100 text-red-700"
-                    }
-                  `}>
+        <span className="
+          text-gray-500
+        ">
+          Device Mode
+        </span>
 
-                    {
-                      device.status === "online"
+        <select
 
-                        ? <Wifi size={14} />
+          value={
+            device.device_mode || "IN"
+          }
 
-                        : <WifiOff size={14} />
-                    }
+          onChange={async (e) => {
 
-                    {device.status}
+            try {
 
-                  </span>
+              await PUT(
+  `/devices/${device.id}`,
+  {
 
-                </div>
+    device_name:
+      device.device_name,
 
-              </div>
+    location:
+      device.location,
 
-            </div>
+    device_mode:
+      e.target.value
 
-          ))
+  }
+);
+
+              fetchDevices();
+
+            } catch (err) {
+
+              console.error(err);
+
+              alert(
+                "Failed to update mode"
+              );
+
+            }
+
+          }}
+
+          className="
+            border
+            rounded-lg
+            px-3
+            py-2
+            text-sm
+            font-medium
+          "
+        >
+
+          <option value="IN">
+            IN
+          </option>
+
+          <option value="OUT">
+            OUT
+          </option>
+
+          <option value="MESS">
+            MESS
+          </option>
+
+        </select>
+
+      </div>
+
+      {/* STATUS */}
+
+      <div className="
+        flex
+        justify-between
+        items-center
+      ">
+
+        <span className="
+          text-gray-500
+        ">
+          Status
+        </span>
+
+        <span className={`
+          flex
+          items-center
+          gap-1
+          px-3
+          py-1
+          rounded-full
+          text-xs
+          font-medium
+
+          ${
+            device.status === "online"
+
+              ? "bg-green-100 text-green-700"
+
+              : "bg-red-100 text-red-700"
+          }
+        `}>
+
+          {
+            device.status === "online"
+
+              ? <Wifi size={14} />
+
+              : <WifiOff size={14} />
+          }
+
+          {device.status}
+
+        </span>
+
+      </div>
+
+    </div>
+
+  </div>
+
+))
 
         )}
 

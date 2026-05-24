@@ -15,6 +15,7 @@ import RoomManagement from "./components/superadmin/RoomManagement";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DeviceManagement from "./components/superadmin/DeviceManagement";
 import Reports from "./components/superadmin/Reports";
+import CardManagement from "./components/superadmin/CardManagement";
 
 // ✅ AUTH CONTEXT
 import { useAuth } from "./context/AuthContext";
@@ -132,53 +133,19 @@ function App() {
             {/* 🔴 SUPERADMIN */}
             {/* ========================= */}
 
-            <Route
-              path="/camp"
-              element={
-                <ProtectedRoute roles={["superadmin"]}>
-                  <CampForm />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/camp-list"
-              element={
-                <ProtectedRoute roles={["superadmin"]}>
-                  <CampList />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/all-workers"
-              element={
-                <ProtectedRoute roles={["superadmin"]}>
-                  <AllWorkers />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/all-rooms"
-              element={
-                <ProtectedRoute roles={["superadmin"]}>
-                  <AllRooms />
-                </ProtectedRoute>
-              }
-            />
-                <Route
-  path="/room-management"
-  element={
-    <ProtectedRoute roles={["superadmin"]}>
-      <RoomManagement />
-    </ProtectedRoute>
-  }
-/>
-
+<Route path="/camp" element={ <ProtectedRoute roles={["superadmin"]}> <CampForm /> </ProtectedRoute> }/>
+<Route path="/camp-list" element={ <ProtectedRoute roles={["superadmin"]}> <CampList /> </ProtectedRoute> }/>
+<Route path="/all-workers" element={<ProtectedRoute roles={["superadmin"]}> <AllWorkers /></ProtectedRoute> }/>
+<Route path="/all-rooms" element={<ProtectedRoute roles={["superadmin"]}> <AllRooms /></ProtectedRoute>}/>
+<Route path="/room-management"element={<ProtectedRoute roles={["superadmin"]}><RoomManagement /></ProtectedRoute>}/>
 <Route  path="/devices"  element={<DeviceManagement />} />
 <Route path="/reports" element={ <ProtectedRoute roles={["superadmin"]} > <Reports /> </ProtectedRoute> }/>
-
+<Route path="/cards" element={<CardManagement />} />
+            
+            
+            
+            
+            
             {/* ========================= */}
             {/* 🕒 ATTENDANCE */}
             {/* ========================= */}

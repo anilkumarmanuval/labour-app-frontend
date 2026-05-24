@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 
 import {
   GET,
-  PUT
+  POST
 } from "../utils/api";
 
-function RoomForm({ campId }) {
+function RoomForm() {
 
   const [rooms, setRooms] =
     useState([]);
@@ -25,9 +25,9 @@ function RoomForm({ campId }) {
   const [error, setError] =
     useState(null);
 
-  // =========================
+  // =====================================
   // FETCH DATA
-  // =========================
+  // =====================================
 
   useEffect(() => {
 
@@ -36,9 +36,9 @@ function RoomForm({ campId }) {
 
   }, []);
 
-  // =========================
+  // =====================================
   // FETCH ROOMS
-  // =========================
+  // =====================================
 
   const fetchRooms =
     async () => {
@@ -58,9 +58,9 @@ function RoomForm({ campId }) {
 
   };
 
-  // =========================
+  // =====================================
   // FETCH WORKERS
-  // =========================
+  // =====================================
 
   const fetchWorkers =
     async () => {
@@ -68,7 +68,9 @@ function RoomForm({ campId }) {
     try {
 
       const data =
-        await GET("/available-workers");
+        await GET(
+          "/available-workers"
+        );
 
       setWorkers(data);
 
@@ -80,9 +82,9 @@ function RoomForm({ campId }) {
 
   };
 
-  // =========================
+  // =====================================
   // FETCH BEDS
-  // =========================
+  // =====================================
 
   const fetchBeds =
     async (roomId) => {
@@ -104,9 +106,9 @@ function RoomForm({ campId }) {
 
   };
 
-  // =========================
+  // =====================================
   // ASSIGN BED
-  // =========================
+  // =====================================
 
   const handleAssign =
     async (bedId) => {
@@ -121,8 +123,10 @@ function RoomForm({ campId }) {
 
     try {
 
-      await PUT(
-        "/beds/assign",
+      // ✅ CORRECT ROUTE
+
+      await POST(
+        "/assign-bed",
         {
           bed_id: bedId,
           worker_id:
@@ -130,60 +134,85 @@ function RoomForm({ campId }) {
         }
       );
 
-      fetchBeds(
+      // ✅ REFRESH
+
+      await fetchBeds(
         selectedRoom
       );
-await fetchWorkers();
-setSelectedWorker("");
+
+      await fetchWorkers();
+
+      // ✅ RESET
+
+      setSelectedWorker("");
+
     } catch (err) {
 
-      alert(err.message);
+      console.error(err);
+
+      alert(
+        err.message
+      );
 
     }
 
   };
 
-  // =========================
-  // UNASSIGN BED
-  // =========================
+  // =====================================
+  // REMOVE BED
+  // =====================================
 
   const handleUnassign =
     async (bedId) => {
 
     try {
 
-      await PUT(
-        "/beds/unassign",
+      // ✅ CORRECT ROUTE
+
+      await POST(
+        "/remove-bed",
         {
           bed_id: bedId
         }
       );
 
-      fetchBeds(
+      // ✅ REFRESH
+
+      await fetchBeds(
         selectedRoom
       );
 
+      await fetchWorkers();
+
     } catch (err) {
 
-      alert(err.message);
+      console.error(err);
+
+      alert(
+        err.message
+      );
 
     }
 
   };
 
-  // =========================
+  // =====================================
   // ERROR UI
-  // =========================
+  // =====================================
 
   if (error) {
 
     return (
+
       <div className="
         p-8
         text-red-500
       ">
+
         {error}
+
       </div>
+
     );
 
   }
@@ -193,6 +222,8 @@ setSelectedWorker("");
     <div className="
       p-6
       space-y-6
+      bg-gray-50
+      min-h-screen
     ">
 
       {/* HEADER */}
@@ -202,6 +233,7 @@ setSelectedWorker("");
         <h1 className="
           text-3xl
           font-bold
+          text-gray-900
         ">
           Room Allocation
         </h1>
@@ -224,13 +256,15 @@ setSelectedWorker("");
         gap-6
       ">
 
-        {/* SELECT ROOM */}
+        {/* ROOM SELECT */}
 
         <div className="
           bg-white
           p-6
-          rounded-2xl
-          shadow-lg
+          rounded-3xl
+          shadow-sm
+          border
+          border-gray-200
         ">
 
           <h2 className="
@@ -256,9 +290,13 @@ setSelectedWorker("");
             }}
             className="
               border
-              rounded-xl
+              border-gray-300
+              rounded-2xl
               p-3
               w-full
+              outline-none
+              focus:ring-2
+              focus:ring-black
             "
           >
 
@@ -272,7 +310,9 @@ setSelectedWorker("");
                 key={room.id}
                 value={room.id}
               >
+
                 {room.room_number}
+
               </option>
 
             ))}
@@ -281,13 +321,15 @@ setSelectedWorker("");
 
         </div>
 
-        {/* SELECT WORKER */}
+        {/* WORKER SELECT */}
 
         <div className="
           bg-white
           p-6
-          rounded-2xl
-          shadow-lg
+          rounded-3xl
+          shadow-sm
+          border
+          border-gray-200
         ">
 
           <h2 className="
@@ -307,9 +349,13 @@ setSelectedWorker("");
             }
             className="
               border
-              rounded-xl
+              border-gray-300
+              rounded-2xl
               p-3
               w-full
+              outline-none
+              focus:ring-2
+              focus:ring-black
             "
           >
 
@@ -323,9 +369,11 @@ setSelectedWorker("");
                 key={worker.id}
                 value={worker.id}
               >
+
                 {worker.name}
                 {" — "}
                 {worker.company}
+
               </option>
 
             ))}
@@ -343,9 +391,13 @@ setSelectedWorker("");
         <div className="
           bg-white
           p-6
-          rounded-2xl
-          shadow-lg
+          rounded-3xl
+          shadow-sm
+          border
+          border-gray-200
         ">
+
+          {/* HEADER */}
 
           <div className="
             flex
@@ -355,7 +407,7 @@ setSelectedWorker("");
           ">
 
             <h2 className="
-              text-xl
+              text-2xl
               font-bold
             ">
               Bed Allocation
@@ -365,19 +417,23 @@ setSelectedWorker("");
               text-sm
               text-gray-500
             ">
+
               Total Beds:
               {" "}
               {beds.length}
+
             </span>
 
           </div>
+
+          {/* GRID */}
 
           <div className="
             grid
             grid-cols-1
             md:grid-cols-2
             lg:grid-cols-3
-            gap-4
+            gap-5
           ">
 
             {beds.map((bed) => {
@@ -390,58 +446,69 @@ setSelectedWorker("");
                 <div
                   key={bed.id}
                   className={`
-                    rounded-2xl
+                    rounded-3xl
                     p-5
-                    text-white
-                    shadow-lg
+                    shadow-sm
+                    border
                     transition
 
                     ${
                       occupied
 
-                      ? "bg-red-500"
+                      ? "bg-red-50 border-red-200"
 
-                      : "bg-green-500"
+                      : "bg-green-50 border-green-200"
                     }
                   `}
                 >
 
-                  {/* BED NUMBER */}
+                  {/* TOP */}
 
                   <div className="
                     flex
                     justify-between
                     items-center
-                    mb-4
+                    mb-5
                   ">
 
                     <h3 className="
-                      text-xl
+                      text-2xl
                       font-bold
+                      text-gray-900
                     ">
                       {bed.bed_number}
                     </h3>
 
-                    <span className="
+                    <span className={`
                       text-xs
-                      bg-white/20
-                      px-2
+                      px-3
                       py-1
                       rounded-full
-                    ">
+                      font-medium
 
-                      {occupied
+                      ${
+                        occupied
+
+                        ? "bg-red-500 text-white"
+
+                        : "bg-green-500 text-white"
+                      }
+                    `}>
+
+                      {
+                        occupied
                         ? "Occupied"
-                        : "Available"}
+                        : "Available"
+                      }
 
                     </span>
 
                   </div>
 
-                  {/* STATUS */}
+                  {/* CONTENT */}
 
                   <div className="
-                    mb-4
+                    mb-5
                   ">
 
                     {occupied ? (
@@ -450,37 +517,43 @@ setSelectedWorker("");
 
                         <p className="
                           text-sm
-                          opacity-90
+                          text-gray-500
                         ">
                           Assigned Worker
                         </p>
 
-                       <div>
+                        <div className="
+                          mt-2
+                        ">
 
-  <p className="
-    text-lg
-    font-semibold
-  ">
-    {bed.worker_name}
-  </p>
+                          <p className="
+                            text-lg
+                            font-semibold
+                            text-gray-900
+                          ">
+                            {
+                              bed.worker_name
+                            }
+                          </p>
 
-  <p className="
-    text-xs
-    opacity-80
-    mt-1
-  ">
-    {bed.employee_type}
-  </p>
+                          <p className="
+                            text-sm
+                            text-gray-500
+                            mt-1
+                          ">
+                            {
+                              bed.employee_type
+                            }
+                          </p>
 
-</div>
+                        </div>
 
                       </div>
 
                     ) : (
 
                       <p className="
-                        text-sm
-                        opacity-90
+                        text-gray-500
                       ">
                         Ready for allocation
                       </p>
@@ -500,17 +573,19 @@ setSelectedWorker("");
                         )
                       }
                       className="
-                        bg-white
-                        text-green-600
                         w-full
-                        py-2
-                        rounded-xl
-                        font-semibold
-                        hover:bg-gray-100
+                        bg-black
+                        text-white
+                        py-3
+                        rounded-2xl
+                        font-medium
+                        hover:bg-gray-800
                         transition
                       "
                     >
+
                       Assign Bed
+
                     </button>
 
                   ) : (
@@ -522,17 +597,19 @@ setSelectedWorker("");
                         )
                       }
                       className="
-                        bg-white
-                        text-red-600
                         w-full
-                        py-2
-                        rounded-xl
-                        font-semibold
-                        hover:bg-gray-100
+                        bg-red-500
+                        text-white
+                        py-3
+                        rounded-2xl
+                        font-medium
+                        hover:bg-red-600
                         transition
                       "
                     >
+
                       Remove Worker
+
                     </button>
 
                   )}
